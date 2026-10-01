@@ -71,8 +71,6 @@ The application calculates due dates dynamically upon checkout. Whenever the cat
 
 ```text
 activity-1/
-├── .agents/
-│   └── skills/              # Agent skills (vue-best-practices, vue-pinia-best-practices, etc.)
 ├── src/
 │   ├── assets/              # Static assets and global styles
 │   ├── components/          # Reusable UI components (EquipmentCard, StatusBadge, Modals)
