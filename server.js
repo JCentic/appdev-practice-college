@@ -179,6 +179,115 @@ app.get('/api/equipment', (req, res, next) => {
   }
 });
 
+// In-memory borrow requests dataset
+let requests = [];
+let nextRequestId = 1;
+
+// Get all borrow requests endpoint
+app.get('/api/requests', (req, res, next) => {
+  try {
+    res.json({
+      status: 'success',
+      data: requests,
+      count: requests.length
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Submit borrow request endpoint (Phase 03)
+app.post('/api/requests', (req, res, next) => {
+  try {
+    const { equipmentId, borrowerName, borrowerRole, startDate, dueDate, purpose } = req.body;
+
+    // Validate required fields exist
+    if (
+      equipmentId === undefined ||
+      equipmentId === null ||
+      !borrowerName ||
+      !borrowerRole ||
+      !startDate ||
+      !dueDate ||
+      !purpose
+    ) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'All fields are required: equipmentId, borrowerName, borrowerRole, startDate, dueDate, and purpose.'
+      });
+    }
+
+    const trimmedBorrowerName = String(borrowerName).trim();
+    const trimmedBorrowerRole = String(borrowerRole).trim();
+    const trimmedPurpose = String(purpose).trim();
+
+    if (!trimmedBorrowerName || !trimmedBorrowerRole || !trimmedPurpose) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Borrower name, role, and purpose cannot be empty.'
+      });
+    }
+
+    // Verify equipment exists
+    const item = equipment.find(eq => eq.id === Number(equipmentId));
+    if (!item) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Equipment with ID ${equipmentId} was not found.`
+      });
+    }
+
+    // Verify equipment is Available
+    if (item.status !== 'Available') {
+      return res.status(400).json({
+        status: 'error',
+        message: `Equipment "${item.name}" is currently ${item.status} and cannot be requested for borrowing.`
+      });
+    }
+
+    // Validate dates
+    const start = new Date(startDate);
+    const due = new Date(dueDate);
+
+    if (isNaN(start.getTime()) || isNaN(due.getTime())) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid startDate or dueDate format. Please provide valid date strings.'
+      });
+    }
+
+    if (due < start) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'The expected return date (dueDate) cannot be earlier than the start date.'
+      });
+    }
+
+    const newRequest = {
+      id: nextRequestId++,
+      equipmentId: item.id,
+      equipmentName: item.name,
+      borrowerName: trimmedBorrowerName,
+      borrowerRole: trimmedBorrowerRole,
+      startDate: String(startDate),
+      dueDate: String(dueDate),
+      purpose: trimmedPurpose,
+      status: 'Pending',
+      createdAt: new Date().toISOString()
+    };
+
+    requests.push(newRequest);
+
+    return res.status(201).json({
+      status: 'success',
+      message: 'Borrow request submitted successfully.',
+      data: newRequest
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Catch-all 404 handler for unknown API routes
 app.use('/api', (req, res) => {
   res.status(404).json({

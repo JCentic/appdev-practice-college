@@ -16,7 +16,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['retry', 'clearFilters']);
+const emit = defineEmits(['retry', 'clearFilters', 'borrow']);
 </script>
 
 <template>
@@ -73,6 +73,7 @@ const emit = defineEmits(['retry', 'clearFilters']);
         v-for="item in items"
         :key="item.id"
         :equipment="item"
+        @borrow="emit('borrow', $event)"
       />
     </div>
   </div>
