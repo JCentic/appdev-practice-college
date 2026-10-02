@@ -9,6 +9,10 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['borrow']);
+
+const isAvailable = computed(() => props.equipment.status === 'Available');
+
 const statusHint = computed(() => {
   switch (props.equipment.status) {
     case 'Available':
@@ -38,6 +42,20 @@ const statusHint = computed(() => {
         <span class="equipment-card__code">{{ equipment.code }}</span>
       </div>
       <p class="equipment-card__description">{{ equipment.description }}</p>
+
+      <div class="equipment-card__actions">
+        <button
+          type="button"
+          class="borrow-btn"
+          :class="{ 'borrow-btn--available': isAvailable, 'borrow-btn--disabled': !isAvailable }"
+          :disabled="!isAvailable"
+          :title="isAvailable ? 'Request to borrow this item' : `Item is currently ${equipment.status}`"
+          @click="isAvailable && emit('borrow', equipment)"
+        >
+          <span v-if="isAvailable" class="borrow-btn__icon">📋</span>
+          <span>{{ isAvailable ? 'Borrow Item' : 'Unavailable' }}</span>
+        </button>
+      </div>
     </div>
 
     <footer class="equipment-card__footer">
@@ -128,6 +146,56 @@ const statusHint = computed(() => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.equipment-card__actions {
+  margin-top: auto;
+  margin-bottom: 0.875rem;
+}
+
+.borrow-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.borrow-btn--available {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+.borrow-btn--available:hover {
+  background-color: #1d4ed8;
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+}
+
+.borrow-btn--available:active {
+  transform: translateY(0);
+}
+
+.borrow-btn--disabled {
+  background-color: rgba(30, 41, 59, 0.8);
+  color: #64748b;
+  border-color: #334155;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.borrow-btn__icon {
+  font-size: 0.95rem;
+  line-height: 1;
 }
 
 .equipment-card__footer {

@@ -36,7 +36,7 @@ onMounted(() => {
         </div>
 
         <div class="app-header__meta">
-          <span class="phase-pill">Phase 02: Catalog & Live Status</span>
+          <span class="phase-pill">Phase 03: Borrow Request Submission</span>
           <div
             class="health-indicator"
             :class="isBackendOnline ? 'health-indicator--online' : 'health-indicator--offline'"
@@ -62,7 +62,7 @@ onMounted(() => {
     <!-- Global Footer -->
     <footer class="app-footer">
       <div class="app-footer__container">
-        <p>Campus Equipment Borrowing System • Phase 02: Equipment Catalog & Live Status</p>
+        <p>Campus Equipment Borrowing System • Phase 03: Borrow Request Submission Flow</p>
         <p class="app-footer__tech">Vite + Vue 3 Composition API • Pinia Store • Express Monolith REST API</p>
       </div>
     </footer>
