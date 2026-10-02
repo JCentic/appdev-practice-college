@@ -1,252 +1,224 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import CatalogView from './views/CatalogView.vue';
 
-const healthData = ref(null);
-const isLoading = ref(true);
-const errorMessage = ref('');
+const isBackendOnline = ref(true);
+const checkingHealth = ref(false);
 
-const checkHealth = async () => {
-  isLoading.value = true;
-  errorMessage.value = '';
+const verifyBackendHealth = async () => {
+  checkingHealth.value = true;
   try {
     const response = await fetch('/api/health');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    healthData.value = data;
-  } catch (err) {
-    errorMessage.value = err.message || 'Failed to connect to backend server';
-    healthData.value = null;
+    isBackendOnline.value = response.ok;
+  } catch {
+    isBackendOnline.value = false;
   } finally {
-    isLoading.value = false;
+    checkingHealth.value = false;
   }
 };
 
 onMounted(() => {
-  checkHealth();
+  verifyBackendHealth();
 });
 </script>
 
 <template>
-  <main class="app-container">
-    <div class="card">
-      <header class="header">
-        <div class="badge">Phase 01</div>
-        <h1 class="title">Campus Equipment Borrowing System</h1>
-        <p class="subtitle">Monolithic Architecture Scaffolding & Health Check</p>
-      </header>
-
-      <section class="status-section">
-        <div v-if="isLoading" class="status-box loading">
-          <span class="spinner"></span>
-          <p>Connecting to backend API...</p>
+  <div class="app-shell">
+    <!-- Top Global Header -->
+    <header class="app-header">
+      <div class="app-header__container">
+        <div class="app-brand">
+          <div class="app-brand__icon">📦</div>
+          <div>
+            <h1 class="app-brand__title">Campus Equipment Borrowing System</h1>
+            <p class="app-brand__subtitle">College Department Equipment Inventory & Live Status</p>
+          </div>
         </div>
 
-        <div v-else-if="errorMessage" class="status-box error">
-          <div class="status-header">
-            <span class="indicator-dot error-dot"></span>
-            <span class="status-title">Backend connection failed</span>
+        <div class="app-header__meta">
+          <span class="phase-pill">Phase 02: Catalog & Live Status</span>
+          <div
+            class="health-indicator"
+            :class="isBackendOnline ? 'health-indicator--online' : 'health-indicator--offline'"
+            title="Backend API Connection Status"
+            @click="verifyBackendHealth"
+          >
+            <span class="health-indicator__dot"></span>
+            <span class="health-indicator__label">
+              {{ isBackendOnline ? 'Express API Online' : 'API Disconnected' }}
+            </span>
           </div>
-          <p class="status-detail">{{ errorMessage }}</p>
-          <button class="action-btn retry-btn" @click="checkHealth">Retry Connection</button>
         </div>
+      </div>
+    </header>
 
-        <div v-else-if="healthData" class="status-box success">
-          <div class="status-header">
-            <span class="indicator-dot success-dot"></span>
-            <span class="status-title">Backend connected: {{ healthData.status }}</span>
-          </div>
-          <p class="status-detail">{{ healthData.message }}</p>
-          <div class="meta-info">
-            <span>Server Response Time: {{ new Date(healthData.timestamp).toLocaleTimeString() }}</span>
-          </div>
-          <button class="action-btn refresh-btn" @click="checkHealth">Re-check Connection</button>
-        </div>
-      </section>
+    <!-- Main View Surface -->
+    <main class="app-main">
+      <div class="app-main__container">
+        <CatalogView />
+      </div>
+    </main>
 
-      <footer class="footer">
-        <p>Vite + Vue 3 Frontend (Port 5173) ⇄ Express REST API Backend (Port 5000)</p>
-      </footer>
-    </div>
-  </main>
+    <!-- Global Footer -->
+    <footer class="app-footer">
+      <div class="app-footer__container">
+        <p>Campus Equipment Borrowing System • Phase 02: Equipment Catalog & Live Status</p>
+        <p class="app-footer__tech">Vite + Vue 3 Composition API • Pinia Store • Express Monolith REST API</p>
+      </div>
+    </footer>
+  </div>
 </template>
 
 <style scoped>
-.app-container {
+.app-shell {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  color: #f8fafc;
-  padding: 1.5rem;
-  box-sizing: border-box;
-}
-
-.card {
-  width: 100%;
-  max-width: 580px;
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 1rem;
-  padding: 2.25rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-  text-align: center;
-}
-
-.header {
-  margin-bottom: 2rem;
-}
-
-.badge {
-  display: inline-block;
-  background-color: #3b82f6;
-  color: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  margin-bottom: 0.75rem;
-}
-
-.title {
-  font-size: 1.625rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 0.5rem 0;
-}
-
-.subtitle {
-  font-size: 0.95rem;
-  color: #94a3b8;
-  margin: 0;
-}
-
-.status-section {
-  margin: 2rem 0;
-}
-
-.status-box {
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  display: flex;
   flex-direction: column;
+  background-color: #0b1120;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.app-header {
+  background-color: #0f172a;
+  border-bottom: 1px solid #1e293b;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.app-header__container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.app-brand__icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  background-color: #1e293b;
+  padding: 0.5rem;
+  border-radius: 0.65rem;
+  border: 1px solid #334155;
+}
+
+.app-brand__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.app-brand__subtitle {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.825rem;
+  color: #94a3b8;
+}
+
+.app-header__meta {
+  display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.status-box.loading {
-  background-color: #1e293b;
-  border: 1px dashed #475569;
-  color: #94a3b8;
-}
-
-.spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 3px solid rgba(148, 163, 184, 0.2);
-  border-top-color: #38bdf8;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.status-box.success {
-  background-color: rgba(16, 185, 129, 0.12);
-  border: 1px solid #059669;
-  color: #d1fae5;
-}
-
-.status-box.error {
-  background-color: rgba(239, 68, 68, 0.12);
-  border: 1px solid #dc2626;
-  color: #fee2e2;
-}
-
-.status-header {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.indicator-dot {
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 50%;
-}
-
-.indicator-dot.success-dot {
-  background-color: #10b981;
-  box-shadow: 0 0 8px #10b981;
-}
-
-.indicator-dot.error-dot {
-  background-color: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
-}
-
-.status-title {
-  font-size: 1.15rem;
+.phase-pill {
+  font-size: 0.75rem;
   font-weight: 600;
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  white-space: nowrap;
 }
 
-.status-detail {
-  font-size: 0.9rem;
-  color: #cbd5e1;
-  margin: 0;
-}
-
-.meta-info {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-.action-btn {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1.25rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+.health-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  border-width: 1px;
+  border-style: solid;
 }
 
-.refresh-btn {
-  background-color: #059669;
-  color: #ffffff;
+.health-indicator__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
 }
 
-.refresh-btn:hover {
-  background-color: #047857;
+.health-indicator--online {
+  background-color: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+.health-indicator--online .health-indicator__dot {
+  background-color: #10b981;
+  box-shadow: 0 0 6px #10b981;
 }
 
-.retry-btn {
-  background-color: #dc2626;
-  color: #ffffff;
+.health-indicator--offline {
+  background-color: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+.health-indicator--offline .health-indicator__dot {
+  background-color: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
 }
 
-.retry-btn:hover {
-  background-color: #b91c1c;
+.app-main {
+  flex: 1;
+  padding: 2rem 1.5rem 3rem 1.5rem;
 }
 
-.footer {
-  border-top: 1px solid #334155;
-  padding-top: 1.25rem;
-  font-size: 0.8rem;
+.app-main__container {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.app-footer {
+  border-top: 1px solid #1e293b;
+  background-color: #0f172a;
+  padding: 1.5rem;
+  text-align: center;
   color: #64748b;
+  font-size: 0.825rem;
 }
 
-.footer p {
+.app-footer__container {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.app-footer p {
   margin: 0;
+}
+
+.app-footer__tech {
+  font-size: 0.75rem;
+  color: #475569;
 }
 </style>
